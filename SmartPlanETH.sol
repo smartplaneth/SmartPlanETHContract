@@ -7,11 +7,13 @@ contract SmartPlanETH {
         address referrer;
         uint partnersCount;
         
-        mapping(uint8 => bool) activeX3Levels;
-        mapping(uint8 => bool) activeX6Levels;
+        mapping(uint8 => bool) activeX1UniLevels;
+        mapping(uint8 => bool) activeX2UniLevels;
+        mapping(uint8 => bool) activeX3UniLevels;
         
+        mapping(uint8 => X1) x1Matrix;
+        mapping(uint8 => X2) x2Matrix;
         mapping(uint8 => X3) x3Matrix;
-        mapping(uint8 => X6) x6Matrix;
     }
     
     struct X3 {
@@ -52,7 +54,7 @@ contract SmartPlanETH {
     
     
     constructor(address ownerAddress) public {
-        levelPrice[1] = 0.025 ether;
+        levelPrice[1] = 0.02 ether;
         for (uint8 i = 2; i <= LAST_LEVEL; i++) {
             levelPrice[i] = levelPrice[i-1] * 2;
         }
@@ -69,8 +71,9 @@ contract SmartPlanETH {
         idToAddress[1] = ownerAddress;
         
         for (uint8 i = 1; i <= LAST_LEVEL; i++) {
-            users[ownerAddress].activeX3Levels[i] = true;
-            users[ownerAddress].activeX6Levels[i] = true;
+            users[ownerAddress].activeX1UniLevels[i] = true;
+            users[ownerAddress].activeX2UniLevels[i] = true;
+            users[ownerAddress].activeX3UniLevels[i] = true;
         }
         
         userIds[1] = ownerAddress;
@@ -97,13 +100,13 @@ contract SmartPlanETH {
         if (matrix == 1) {
             require(!users[msg.sender].activeX3Levels[level], "level already activated");
 
-            if (users[msg.sender].x3Matrix[level-1].blocked) {
-                users[msg.sender].x3Matrix[level-1].blocked = false;
+            if (users[msg.sender].x1Matrix[level-1].blocked) {
+                users[msg.sender].x1Matrix[level-1].blocked = false;
             }
     
             address freeX3Referrer = findFreeX3Referrer(msg.sender, level);
-            users[msg.sender].x3Matrix[level].currentReferrer = freeX3Referrer;
-            users[msg.sender].activeX3Levels[level] = true;
+            users[msg.sender].x1Matrix[level].currentReferrer = freeX3Referrer;
+            users[msg.sender].activeX1UniLevels[level] = true;
             updateX3Referrer(msg.sender, freeX3Referrer, level);
             
             emit Upgrade(msg.sender, freeX3Referrer, 1, level);
